@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'gatsby'
+import { Link, useStaticQuery, graphql } from 'gatsby'
 import styled from 'styled-components'
 
 const NavBar = styled.nav`
@@ -48,31 +48,43 @@ const NavList = styled.ul`
   }
 `
 
-const Navigation = props => (
-  <NavBar role="navigation">
-    <NavList>
-      <li>
-        <Link to="/">Home</Link>
-      </li>
-      <li>
-        <Link to="/about">About</Link>
-      </li>
-      <li>
-        <Link to="locations">Locations</Link>
-        <ul>
-          <li>
-            <Link to="/locations/ottawa/">Ottawa</Link>
-          </li>
-          <li>
-            <Link to="/locations/montreal/">Montreal</Link>
-          </li>
-          <li>
-            <Link to="/locations/toronto/">Toronto</Link>
-          </li>
-        </ul>
-      </li>
-    </NavList>
-  </NavBar>
-)
+const Navigation = props => {
+  const data = useStaticQuery(graphql`
+    query CitiesQuery {
+      allContentfulCities {
+        edges {
+          node {
+            slug
+            name
+            contentful_id
+          }
+        }
+      }
+    }
+  `)
+
+  return (
+    <NavBar role="navigation">
+      <NavList>
+        <li>
+          <Link to="/">Home</Link>
+        </li>
+        <li>
+          <Link to="/about">About</Link>
+        </li>
+        <li>
+          <Link to="locations">Locations</Link>
+          <ul>
+            {data.allContentfulCities.edges.map( city => (
+              <li key={city.node.contentful_id}>
+                <Link to={`/locations/${city.node.slug}`}>{city.node.name}</Link>
+              </li>
+            ))}
+          </ul>
+        </li>
+      </NavList>
+    </NavBar>
+  )
+}
 
 export default Navigation
